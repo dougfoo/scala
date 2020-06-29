@@ -5,6 +5,13 @@ project/
 target/
 build/
 
+# cache
+*.checked
+*.sha1
+*.pom__md5
+*.jar
+*/null/*
+
 # eclipse
 build
 .classpath
@@ -30,3 +37,4 @@ build
 
 #general
 *.class
+
