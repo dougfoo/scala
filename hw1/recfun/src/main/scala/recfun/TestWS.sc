@@ -1,40 +1,53 @@
-// count # of ways to make
+
+def countKids(money: Int, coins: List[Int], f: (Int, List[Int]) => Int): Int = {
+  println(s"countKids $money coins $coins")
+  var ct = 0
+  for (coin <- coins)
+    ct += f(money-coin, coins.sorted(Ordering.Int.reverse))
+  ct
+}
+
 def countWays(money: Int, coins: List[Int]): Int = {
   println(s"countWays: $money $coins")
-  var ways = 0
-  for (coin <- coins)
-    if (coin <= money)
-      ways += countWays(money-coin, coins) + 1
-      println(s"ways: $ways ")
-  ways
+  if (coins.isEmpty) 0
+  else if (money == coins.head) {
+    println("found one way")
+    countKids(money, coins.drop(1), countWays) + 1
+  }
+  else if (money < coins.head) countKids(money, coins.drop(1), countWays)
+  else countWays(money - coins.head, coins)
 }
-countWays(5,List(1))
-countWays(5,List(1,2))
-
 
 def countChange(money: Int, coins: List[Int]): Int = {
-  println("countChange")
-
-  /* eg money=f(5), coins=[5,2,1] -- fix coins
-     recurse deep and get
-       f(5) = f(4) + x  [1111]+1,[211]+1,[22]+1,5
-       f(4) = f(3) + x  [111]+1,[21]+1,[2]+2 (??) -> 1-1-1-1,2-1-1,2-2
-       f(3) = f(2) + x  [11]+1,[2]+1 -> 1-1-1,2-1
-       f(2) = f(1) + x  [1]+1,2 -> 1-1,2
-       f(1) = f(0) + 1  [1]
-       f(0) = 0
-  */
-
-  def countPart(money: Int, coins: List[Int], count: Int): Int = {
-    if (coins.length == 0)
-      0
-    else
-      countPart(money-1, coins, count + countWays(money, coins))
-  }
-
-  countPart(money, coins.sorted(Ordering.Int.reverse), 0)
+  println(s"countChange $money coins $coins")
+  var ct = 0
+  for (coin <- coins)
+    ct += countWays(money-coin, coins.sorted(Ordering.Int.reverse))
+  println(s"countChange $money coins $coins ct: $ct")
+  ct
 }
 
+assert (3 == countChange(4,List(2,1)))
+assert (0 == countWays(1,List(2)))
+assert (1 == countWays(3,List(1)))
+assert (1 == countWays(2,List(2)))
+assert (1 == countWays(4,List(2)))
+assert (2 == countWays(2,List(2,1)))
+//assert (3 == countWays(5,List(2,1)))
+
+/* eg money=f(5), coins=[5,2,1] -- fix coins
+   recurse deep and get
+     f(5) = f(4) + x  [1111]+1,[211]+1,[22]+1,5
+     f(4) = f(3) + x  [111]+1,[21]+1,[2]+2 (??) -> 1-1-1-1,2-1-1,2-2
+     f(3) = f(2) + x  [11]+1,[2]+1 -> 1-1-1,2-1
+     f(2) = f(1) + x  [1]+1,2 -> 1-1,2
+     f(1) = f(0) + 1  [1]
+     f(0) = 0
+*/
+
+countChange(4,List(2))
+
+println("Done")
 
 //
 //countChange(0,List(1))       //

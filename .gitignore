@@ -10,7 +10,7 @@ build/
 *.sha1
 *.pom__md5
 *.jar
-*/null/*
+**/null/**
 
 # eclipse
 build
