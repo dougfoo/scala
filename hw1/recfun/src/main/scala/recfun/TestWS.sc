@@ -1,10 +1,21 @@
 
 def countKids(money: Int, coins: List[Int], cc: (Int, List[Int], List[Int]) => Int, chain: List[Int] = List()): Int = {
   println(s"countKids $money coins $coins")
-  var ct = 0
+  var ct = 0     // agg count
+  var last = 0   // last coin
+  var cur = 0    // cur coint
   for (coin <- coins)  // prob can make flat func ?
-    ct += cc(money-coin, coins, chain)
+    cur = coin
+    ct += cc(money-cur, coins.drop(last), chain)  // need to drop coin on next iteration...
+    last = cur
   ct
+}
+
+def countPaths(money: Int, coins: List[Int], cc: (Int, List[Int], List[Int]) => Int, chain: List[Int] = List()): Int = {
+  println(s"countPaths $money coins $coins")
+  if (coins.isEmpty) 0
+  else
+    cc(money-coins.head, coins, chain) + countPaths(money, coins.drop(1), cc, chain)
 }
 
 def countChange(money: Int, coins: List[Int], chain: List[Int]=List()): Int = {
@@ -13,18 +24,18 @@ def countChange(money: Int, coins: List[Int], chain: List[Int]=List()): Int = {
   else if (money == coins.head) {
     var c = money :: chain
     println(s"--adding 1, chain: $c")
-    countKids(money, coins.drop(1), countChange, money :: chain) + 1
+    countPaths(money, coins.drop(1), countChange, money :: chain) + 1
   }
   else if (money < coins.head) {
     var c = coins.head
-    countKids(money, coins.drop(1), countChange, c :: chain)
+    countPaths(money, coins.drop(1), countChange, c :: chain)
   }
   else {
-    countKids(money, coins, countChange, chain)
+    countPaths(money, coins, countChange, chain)
   }
 }
 
-assert (3 == countKids(4,List(2,1), countChange))
+assert (3 == countPaths(4,List(2,1), countChange))
 //assert (0 == countWays(1,List(2)))
 //assert (1 == countWays(3,List(1)))
 //assert (1 == countWays(2,List(2)))
