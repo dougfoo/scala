@@ -1,38 +1,35 @@
 
-def countKids(money: Int, coins: List[Int], f: (Int, List[Int]) => Int): Int = {
+def countKids(money: Int, coins: List[Int], cc: (Int, List[Int], List[Int]) => Int, chain: List[Int] = List()): Int = {
   println(s"countKids $money coins $coins")
   var ct = 0
-  for (coin <- coins)
-    ct += f(money-coin, coins.sorted(Ordering.Int.reverse))
+  for (coin <- coins)  // prob can make flat func ?
+    ct += cc(money-coin, coins, chain)
   ct
 }
 
-def countWays(money: Int, coins: List[Int]): Int = {
-  println(s"countWays: $money $coins")
+def countChange(money: Int, coins: List[Int], chain: List[Int]=List()): Int = {
+  println(s"countChange: $money $coins")
   if (coins.isEmpty) 0
   else if (money == coins.head) {
-    println("found one way")
-    countKids(money, coins.drop(1), countWays) + 1
+    var c = money :: chain
+    println(s"--adding 1, chain: $c")
+    countKids(money, coins.drop(1), countChange, money :: chain) + 1
   }
-  else if (money < coins.head) countKids(money, coins.drop(1), countWays)
-  else countWays(money - coins.head, coins)
+  else if (money < coins.head) {
+    var c = coins.head
+    countKids(money, coins.drop(1), countChange, c :: chain)
+  }
+  else {
+    countKids(money, coins, countChange, chain)
+  }
 }
 
-def countChange(money: Int, coins: List[Int]): Int = {
-  println(s"countChange $money coins $coins")
-  var ct = 0
-  for (coin <- coins)
-    ct += countWays(money-coin, coins.sorted(Ordering.Int.reverse))
-  println(s"countChange $money coins $coins ct: $ct")
-  ct
-}
-
-assert (3 == countChange(4,List(2,1)))
-assert (0 == countWays(1,List(2)))
-assert (1 == countWays(3,List(1)))
-assert (1 == countWays(2,List(2)))
-assert (1 == countWays(4,List(2)))
-assert (2 == countWays(2,List(2,1)))
+assert (3 == countKids(4,List(2,1), countChange))
+//assert (0 == countWays(1,List(2)))
+//assert (1 == countWays(3,List(1)))
+//assert (1 == countWays(2,List(2)))
+//assert (1 == countWays(4,List(2)))
+//assert (2 == countWays(2,List(2,1)))
 //assert (3 == countWays(5,List(2,1)))
 
 /* eg money=f(5), coins=[5,2,1] -- fix coins
