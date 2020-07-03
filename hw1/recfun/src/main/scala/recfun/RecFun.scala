@@ -33,8 +33,10 @@ object RecFun extends RecFunInterface {
       else
         if (chars.head == '(')
           trim(chars.drop(1), count+1)
-        else if (chars.head == ')')
+        else if (chars.head == ')' && count > 0)
           trim(chars.drop(1), count-1)
+        else if (chars.head == ')' && count == 0)
+          false
         else
           trim(chars.drop(1), count)
     }
@@ -44,6 +46,25 @@ object RecFun extends RecFunInterface {
   /**
    * Exercise 3
    */
-  def countChange(money: Int, coins: List[Int]): Int = 5
+  def countChange(money: Int, coins: List[Int]): Int = {
+    def countWays(money: Int, coins: List[Int]): Int = {
+      println(s"countWays: $money $coins")
+      if (coins.isEmpty) 0
+      else if (money == 0) 1
+      else if (money == coins.head) {
+        countChange(money, coins.drop(1)) + 1
+      }
+      else if (money < coins.head) {
+        countChange(money, coins.drop(1))
+      }
+      else {
+        countChange(money, coins)
+      }
+    }
 
+    println(s"countChange $money coins $coins")
+    if (coins.isEmpty) 0
+    else
+      countWays(money-coins.head, coins) + countChange(money, coins.drop(1))
+  }
 }

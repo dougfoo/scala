@@ -1,89 +1,92 @@
+import scala.collection.mutable.Stack
 
-def countKids(money: Int, coins: List[Int], cc: (Int, List[Int], List[Int]) => Int, chain: List[Int] = List()): Int = {
-  println(s"countKids $money coins $coins")
-  var ct = 0     // agg count
-  var last = 0   // last coin
-  var cur = 0    // cur coint
-  for (coin <- coins)  // prob can make flat func ?
-    cur = coin
-    ct += cc(money-cur, coins.drop(last), chain)  // need to drop coin on next iteration...
-    last = cur
-  ct
+def balance(chars: List[Char]): Boolean = {
+  def trim(chars: List[Char], count: Integer): Boolean = {
+    if (chars.length == 0)
+      count == 0
+    else
+      if (chars.head == '(')
+        trim(chars.drop(1), count+1)
+      else if (chars.head == ')' && count > 0)
+        trim(chars.drop(1), count-1)
+      else if (chars.head == ')' && count == 0)
+        false
+      else
+        trim(chars.drop(1), count)
+  }
+  trim(chars, 0)
 }
 
-def countPaths(money: Int, coins: List[Int], cc: (Int, List[Int], List[Int]) => Int, chain: List[Int] = List()): Int = {
-  println(s"countPaths $money coins $coins")
-  if (coins.isEmpty) 0
-  else
-    cc(money-coins.head, coins, chain) + countPaths(money, coins.drop(1), cc, chain)
-}
+println("Hello")
+assert(true == balance("ABCDEF".toList))
+assert(true == balance("".toList))
+assert(false == balance("())(".toList))
+assert(true == balance("()".toList))
+assert(false == balance("(()".toList))
+assert(false == balance("())".toList))
+assert(false == balance("AB(CDEF)".toList))
+assert(true == balance("AB()CDE()F".toList))
+assert(false == balance("AB( )CDE(F".toList))
+assert(false == balance("AB(A )CDE(F".toList))
+assert(false == balance("AB( ))CDE(F)".toList))
+assert(true == balance("AB( CDE(F)dfd) ".toList))
 
-def countChange(money: Int, coins: List[Int], chain: List[Int]=List()): Int = {
-  println(s"countChange: $money $coins")
-  if (coins.isEmpty) 0
-  else if (money == coins.head) {
-    var c = money :: chain
-    println(s"--adding 1, chain: $c")
-    countPaths(money, coins.drop(1), countChange, money :: chain) + 1
-  }
-  else if (money < coins.head) {
-    var c = coins.head
-    countPaths(money, coins.drop(1), countChange, c :: chain)
-  }
-  else {
-    countPaths(money, coins, countChange, chain)
-  }
-}
+var f = "Doug Cha".toList
 
-assert (3 == countPaths(4,List(2,1), countChange))
-//assert (0 == countWays(1,List(2)))
-//assert (1 == countWays(3,List(1)))
-//assert (1 == countWays(2,List(2)))
-//assert (1 == countWays(4,List(2)))
-//assert (2 == countWays(2,List(2,1)))
-//assert (3 == countWays(5,List(2,1)))
-
-/* eg money=f(5), coins=[5,2,1] -- fix coins
-   recurse deep and get
-     f(5) = f(4) + x  [1111]+1,[211]+1,[22]+1,5
-     f(4) = f(3) + x  [111]+1,[21]+1,[2]+2 (??) -> 1-1-1-1,2-1-1,2-2
-     f(3) = f(2) + x  [11]+1,[2]+1 -> 1-1-1,2-1
-     f(2) = f(1) + x  [1]+1,2 -> 1-1,2
-     f(1) = f(0) + 1  [1]
-     f(0) = 0
-*/
-
-countChange(4,List(2))
-
-println("Done")
+print(f)
+print("all done")
 
 //
-//countChange(0,List(1))       //
-//countChange(1,List(1))       // 1
-//countChange(2,List(1))       // 11
-//countChange(4,List(1,2))     // 1111, 112, 22 = 3
-//countChange(6,List(1,2,5))   // 111111 11112 1122 222 15
-//countChange(10,List(1,2,5))  // 1^10 .....  55
-
-
-/*
-
-6 w/ 1,2,5's
-
-           6
-       1  2   5
-     1   1  2  1
-    1   1  1 2
-   1   1  1
-  1   1
- 1
-
- */
-
-
-/*
-import recfun.RecFun.pascal
-
+//def countChange(money: Int, coins: List[Int]): Int = {
+//  def countWays(money: Int, coins: List[Int]): Int = {
+//    if (coins.isEmpty) 0
+//    else if (money == 0) 1
+//    else if (money == coins.head) {
+//      countChange(money, coins.drop(1)) + 1
+//    }
+//    else if (money < coins.head) {
+//      countChange(money, coins.drop(1))
+//    }
+//    else {
+//      countChange(money, coins)
+//    }
+//  }
+//
+//  if (coins.isEmpty) 0
+//  else
+//    countWays(money-coins.head, coins) + countChange(money, coins.drop(1))
+//}
+//
+//
+//assert (3 == countChange(4,List(2,1)))
+//assert (0 == countChange(1,List(2)))
+//assert (1 == countChange(3,List(1)))
+//assert (1 == countChange(2,List(2)))
+//assert (1 == countChange(4,List(2)))
+//assert (2 == countChange(2,List(2,1)))
+//assert (3 == countChange(5,List(2,1)))
+//assert (5 == countChange(5,List(3,2,1)))
+//assert (6 == countChange(5,List(5,3,2,1)))
+//assert (4 == countChange(5,List(5,2,1)))
+//assert (5 == countChange(6,List(5,2,1)))
+//assert (1022 == countChange(300,List(5,10,20,50,100,200,500)))
+//
+//println("done!")
+//
+///* eg money=f(5), coins=[5,2,1] -- fix coins
+//   recurse deep and get
+//     f(6) = f(5) + x  [11111]+1,[2111]+1,[221]+1,[5]+1,222
+//     f(5) = f(4) + x  [1111]+1,[211]+1,[22]+1,5
+//     f(4) = f(3) + x  [111]+1,[21]+1,[2]+2 (??) -> 1-1-1-1,2-1-1,2-2
+//     f(3) = f(2) + x  [11]+1,[2]+1 -> 1-1-1,2-1
+//     f(2) = f(1) + x  [1]+1,2 -> 1-1,2
+//     f(1) = f(0) + 1  [1]
+//     f(0) = 0
+//*/
+//
+//
+//import recfun.RecFun.pascal
+//
 //def pascal(c: Int, r: Int): Int = {
 //  if (c < 0 || c > r)
 //    0
@@ -102,34 +105,4 @@ import recfun.RecFun.pascal
 //pascal(5,10)
 //pascal(3,15)
 //pascal(3,18)
-def balance(chars: List[Char]): Boolean = {
-  def trim(chars: List[Char], count: Integer): Boolean = {
-    if (chars.length == 0)
-      count == 0
-    else
-      if (chars.head == '(')
-        trim(chars.drop(1), count+1)
-      else if (chars.head == ')')
-        trim(chars.drop(1), count-1)
-      else
-        trim(chars.drop(1), count)
-  }
-  trim(chars, 0)
-}
-println("Hello")
-balance("ABCDEF".toList)
-balance("".toList)
-balance("()".toList)
-balance("(()".toList)
-balance("())".toList)
-balance("AB(CDEF)".toList)
-balance("AB()CDE()F".toList)
-balance("AB( )CDE(F".toList)
-balance("AB(A )CDE(F".toList)
-balance("AB( ))CDE(F)".toList)
-balance("AB( CDE(F)dfd) ".toList)
-
-var f = "Doug Cha".toList
-*/
-
 
