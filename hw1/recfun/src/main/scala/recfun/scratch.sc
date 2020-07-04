@@ -20,7 +20,6 @@ class Rational(x: Int, y: Int) {
   }
 }
 
-
 def addRat(l: Rational, r:Rational): Rational = {
   new Rational(l.num*r.den + r.num*l.den, l.den*r.den)
 }
@@ -37,4 +36,4 @@ var sum = addRat(l,r)
 sum.neg
 l.add(r)
 l.sub(r)
-l.mul(r) 
+l.mul(r)
