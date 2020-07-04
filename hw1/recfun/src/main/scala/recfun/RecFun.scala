@@ -48,7 +48,7 @@ object RecFun extends RecFunInterface {
    */
   def countChange(money: Int, coins: List[Int]): Int = {
     def countWays(money: Int, coins: List[Int]): Int = {
-      println(s"countWays: $money $coins")
+//      println(s"countWays: $money $coins")
       if (coins.isEmpty) 0
       else if (money == 0) 1
       else if (money == coins.head) {
@@ -62,7 +62,7 @@ object RecFun extends RecFunInterface {
       }
     }
 
-    println(s"countChange $money coins $coins")
+//    println(s"countChange $money coins $coins")
     if (coins.isEmpty) 0
     else
       countWays(money-coins.head, coins) + countChange(money, coins.drop(1))
