@@ -90,5 +90,54 @@ class FunSetSuite {
     }
   }
 
+  @Test def `intersect test`: Unit = {
+    new TestSets {
+      val t = intersect(s1, s2)
+      val t2 = intersect(s12, s2)
+      assert(!contains(t, 1), "intersect 1")
+      assert(contains(t2, 2), "intersect 2")
+    }
+  }
+
+  @Test def `filter test`: Unit = {
+    new TestSets {
+      var evenf = (x:Int) => x % 2 == 0
+      val t = filter(s12, evenf)
+      val t2 = filter(sall, evenf)
+      assert(contains(t, 2), "filter 1")
+      assert(contains(t2, 2), "filter 2")
+      assert(contains(t2, 4), "filter 3")
+    }
+  }
+
+  @Test def `forall test`: Unit = {
+    new TestSets {
+      var evenf = (x:Int) => x % 2 == 0
+      val t = forall(union(s2,s4), evenf)
+      val t2 = forall(s12, evenf)
+      assert(t == true, "forall 1")
+      assert(t2==false, "forall 2")
+    }
+  }
+
+  @Test def `exists test`: Unit = {
+    new TestSets {
+      var evenf = (x:Int) => x % 2 == 0
+      val t = exists(union(s2,s4), evenf)
+      val t2 = exists(s12, evenf)
+      assert(t == true, "exists 1")
+      assert(t2== true, "exists 2")
+    }
+  }
+  @Test def `map test`: Unit = {
+    new TestSets {
+      var double = (x:Int) => x * 2
+      val t = map(union(s2,s4), double)
+      val t2 = map(s3, double)
+      assert(contains(t, 4), "filter 1a")
+      assert(contains(t, 8), "filter 1b")
+      assert(contains(t2, 6), "filter 2")
+    }
+  }
   @Rule def individualTestTimeout = new org.junit.rules.Timeout(10 * 1000)
 }
