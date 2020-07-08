@@ -38,6 +38,12 @@ class FunSetSuite {
     val s1 = singletonSet(1)
     val s2 = singletonSet(2)
     val s3 = singletonSet(3)
+    val s4 = singletonSet(4)
+    val s5 = singletonSet(5)
+    val s12 = union(s1,s2)
+    val s23 = union(s2,s3)
+    val s34 = union(s3,s4)
+    val sall = union(union(s12,s34), s5)
   }
 
   /**
@@ -68,10 +74,21 @@ class FunSetSuite {
       assert(contains(s, 1), "Union 1")
       assert(contains(s, 2), "Union 2")
       assert(!contains(s, 3), "Union 3")
+      assert(contains(sall, 1), "Sall 1")
+      assert(contains(sall, 5), "Sall 5")
     }
   }
 
-
+  @Test def `diff test`: Unit = {
+    new TestSets {
+      val t = diff(s1, s2)
+      val t2 = diff(s12, s2)
+      val t3 = diff(s23, s34)
+      assert(contains(t, 1), "Diff 1")
+      assert(contains(t2, 1), "Diff 2")
+      assert(contains(t3, 2), "Diff 3")
+    }
+  }
 
   @Rule def individualTestTimeout = new org.junit.rules.Timeout(10 * 1000)
 }

@@ -43,24 +43,37 @@ val bound = 1000
  */
 def forall(s: FunSet, p: Int => Boolean): Boolean = {
   def iter(a: Int): Boolean = {
-    if (???) ???
-    else if (???) ???
-    else iter(???)
+    if (a > bound) true
+    else if (s(a) && s(a) != p(a)) false
+    else iter(a+1)
   }
-  iter(???)
+  iter(-bound)
 }
 
 /**
  * Returns whether there exists a bounded integer within `s`
  * that satisfies `p`.
  */
-def exists(s: FunSet, p: Int => Boolean): Boolean = ???
+def exists(s: FunSet, p: Int => Boolean): Boolean = {
+  def iter(a: Int): Boolean = {
+    if (a > bound) false      // same as forall, flip true/false and !=/==
+    else if (s(a) && s(a) == p(a)) true
+    else iter(a+1)
+  }
+  iter(-bound)
+}
 
 /**
  * Returns a set transformed by applying `f` to each element of `s`.
  */
-def map(s: FunSet, f: Int => Int): FunSet = ???
-
+def map(s: FunSet, f: Int => Int): FunSet = {
+  def iter(a: Int, b: FunSet): FunSet = {
+    if (a > bound) b
+    else if (s(a)) iter(a+1, union(b, singletonSet(f(a))))
+    else iter(a+1, b)
+  }
+  iter(-bound, (x:Int) => false)  // start w/ dummy empty
+}
 /**
  * Displays the contents of a set
  */
@@ -99,5 +112,6 @@ printSet(diff(d,c)) // 1,2
 
 
 def evens(x:Int) : Boolean = x % 2 == 0
+def double(x:Int) : Int = x * 2
 
 printSet(filter(d, evens)) // evens
