@@ -1,4 +1,9 @@
 import objsets._
+import TweetReader._
+
+def toTweetSet2(l: List[Tweet]): TweetSet = {
+    l.foldLeft(new Empty: TweetSet)(_.incl(_))
+}
 
 var t1 = new Tweet("doug","my tweet",1)
 var t2 = new Tweet("jacky","tweet 2",2)
@@ -18,5 +23,19 @@ val google = List("android", "Android", "galaxy", "Galaxy", "nexus", "Nexus")
 val apple = List("ios", "iOS", "iphone", "iPhone", "ipad", "iPad")
 
 ts3.filter((x:Tweet) => google.exists(x.text.contains(_)))
+
+var gizmodoTweets = ParseTweets.getTweetData("gizmodo", TweetData.gizmodo)
+var gizmodoTweetsSet2 = toTweetSet2(gizmodoTweets)
+
+gizmodoTweets.filter((x:Tweet) => (x.text.contains("Apple")))
+gizmodoTweetsSet2.filter((x:Tweet) => (x.text.contains("Apple")))
+
+gizmodoTweets.length
+var l2 = gizmodoTweets.drop(25)
+l2.length
+toTweetSet2(l2) union ts3
+
+print("end")
+
 
 
