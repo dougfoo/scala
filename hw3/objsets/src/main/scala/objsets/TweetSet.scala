@@ -108,6 +108,7 @@ abstract class TweetSet extends TweetSetInterface {
    * This method takes a function and applies it to every element in the set.
    */
   def foreach(f: Tweet => Unit): Unit
+  def toList: List[Tweet] = List()
 }
 
 class Empty extends TweetSet {
@@ -135,7 +136,17 @@ class NonEmpty(elem: Tweet, left: TweetSet, right: TweetSet) extends TweetSet {
     right.filterAcc(p, left.filterAcc(p, if (p(elem)) acc incl elem else acc))
   }
 
-  override def union(that: TweetSet): TweetSet = ((left union right) union that) incl elem
+  override def toList(): List[Tweet] = {
+    (List() :+ elem) ++ left.toList ++ right.toList
+  }
+
+  // recursive solution O(n^2) ?
+  //  override def union(that: TweetSet): TweetSet = ((left union right) union that) incl elem
+  // merge to list then iterate incl ?
+  override def union(that: TweetSet): TweetSet = {
+    var list1 = List()
+    that.toList.foldLeft[TweetSet](this)((acc, item) => acc.incl(item))
+  }
 
   override def descendingByRetweet: TweetList = {  // reorder create new list ?  TODO
     new Cons(elem, Nil)
@@ -195,10 +206,10 @@ object GoogleVsApple {
   val google = List("android", "Android", "galaxy", "Galaxy", "nexus", "Nexus")
   val apple = List("ios", "iOS", "iphone", "iPhone", "ipad", "iPad")
 
-//  lazy val googleTweets: TweetSet = allTweets.filter((x:Tweet) => google.exists(x.text.contains(_)))
-//  lazy val appleTweets: TweetSet = allTweets.filter((x:Tweet) => apple.exists(x.text.contains(_)))
-  lazy val googleTweets: TweetSet = new Empty
-  lazy val appleTweets: TweetSet = new Empty
+  lazy val googleTweets: TweetSet = allTweets.filter((x:Tweet) => google.exists(x.text.contains(_)))
+  lazy val appleTweets: TweetSet = allTweets.filter((x:Tweet) => apple.exists(x.text.contains(_)))
+//  lazy val googleTweets: TweetSet = new Empty
+//  lazy val appleTweets: TweetSet = new Empty
 
   /**
    * A list of all tweets mentioning a keyword from either apple or google,
@@ -209,9 +220,7 @@ object GoogleVsApple {
 }
 
 object Main extends App {
-  // Print the trending tweets
   println("starting main")
   GoogleVsApple.trending foreach println
-  sites foreach println
   println("end main")
 }
