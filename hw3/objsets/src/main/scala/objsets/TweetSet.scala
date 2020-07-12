@@ -153,20 +153,17 @@ class NonEmpty(elem: Tweet, left: TweetSet, right: TweetSet) extends TweetSet {
   }
 
   override def descendingByRetweet: TweetList = {  // reorder create new list ?  TODO implement fully w/ Cons
-    var m = leastRetweeted
+    val m = leastRetweeted
 //    println("most retweeted: "+m+", this: "+this)
 
-    def makeList(set: TweetSet, acc: Cons): TweetList = {
+    def makeList(acc: Cons, set: TweetSet): TweetList = {
 //      println("makeList: "+set+", acc: "+acc)
-      if (set.isInstanceOf[Empty]) {
-        return acc
-      }
-      else {
-        m = set.leastRetweeted
-        makeList(set.remove(m), new Cons(m, acc))
+      set match {
+        case e:Empty => acc
+        case e:NonEmpty => makeList(new Cons(e.leastRetweeted, acc), e.remove(e.leastRetweeted) )
       }
     }
-    makeList(this.remove(m), new Cons(m, Nil))
+    makeList( new Cons(m, Nil), this.remove(leastRetweeted))
   }
 
   /**
