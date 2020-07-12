@@ -2,13 +2,14 @@ package objsets
 
 import TweetReader._
 
+import scala.collection.View.Empty
+
 /**
  * A class to represent tweets.
  */
 class Tweet(val user: String, val text: String, val retweets: Int) {
   override def toString: String =
-    "User: " + user + "\n" +
-    "Text: " + text + " [" + retweets + "]"
+    "User: " + user + ": " +  "Text: " + text + " [" + retweets + "]"
 }
 
 /**
@@ -67,7 +68,8 @@ abstract class TweetSet extends TweetSetInterface {
    * Question: Should we implment this method here, or should it remain abstract
    * and be implemented in the subclasses?
    */
-  def mostRetweeted: Tweet = descendingByRetweet.head
+  def mostRetweeted: Tweet
+  def leastRetweeted: Tweet
 
   /**
    * Returns a list containing all tweets of this set, sorted by retweet count
@@ -78,9 +80,7 @@ abstract class TweetSet extends TweetSetInterface {
    * Question: Should we implment this method here, or should it remain abstract
    * and be implemented in the subclasses?
    */
-  def descendingByRetweet: TweetList = {  // reorder create new list ?
-    Nil
-  }
+  def descendingByRetweet: TweetList
 
   /**
    * The following methods are already implemented
@@ -116,6 +116,11 @@ class Empty extends TweetSet {
 
   override def union(that: TweetSet): TweetSet = that
 
+  override def descendingByRetweet: TweetList = Nil
+
+  def mostRetweeted: Tweet = throw new java.util.NoSuchElementException("called on Empty")
+  def leastRetweeted: Tweet = throw new java.util.NoSuchElementException("called on Empty")
+
   /**
    * The following methods are already implemented
    */
@@ -141,15 +146,27 @@ class NonEmpty(elem: Tweet, left: TweetSet, right: TweetSet) extends TweetSet {
   }
 
   // recursive solution O(n^2) ?
-  //  override def union(that: TweetSet): TweetSet = ((left union right) union that) incl elem
-  // merge to list then iterate incl ?
+  //     override def union(that: TweetSet): TweetSet = ((left union right) union that) incl elem
+  // is using List and fold cheating?   Maybe should do it natively w/ tree merging hmmm...
   override def union(that: TweetSet): TweetSet = {
-    var list1 = List()
     that.toList.foldLeft[TweetSet](this)((acc, item) => acc.incl(item))
   }
 
-  override def descendingByRetweet: TweetList = {  // reorder create new list ?  TODO
-    new Cons(elem, Nil)
+  override def descendingByRetweet: TweetList = {  // reorder create new list ?  TODO implement fully w/ Cons
+    var m = leastRetweeted
+//    println("most retweeted: "+m+", this: "+this)
+
+    def makeList(set: TweetSet, acc: Cons): TweetList = {
+//      println("makeList: "+set+", acc: "+acc)
+      if (set.isInstanceOf[Empty]) {
+        return acc
+      }
+      else {
+        m = set.leastRetweeted
+        makeList(set.remove(m), new Cons(m, acc))
+      }
+    }
+    makeList(this.remove(m), new Cons(m, Nil))
   }
 
   /**
@@ -166,6 +183,12 @@ class NonEmpty(elem: Tweet, left: TweetSet, right: TweetSet) extends TweetSet {
     else if (elem.text < x.text) new NonEmpty(elem, left, right.incl(x))
     else this
   }
+
+  // TODO figure out how to do w/o converting to list?
+  //    traveling the TweetSet seems bit difficult, do we use foreach ?
+  def mostRetweeted: Tweet = this.toList.sortBy(_.retweets)(Ordering.Int.reverse).head
+
+  def leastRetweeted: Tweet = this.toList.sortBy(_.retweets)(Ordering.Int).head
 
   def remove(tw: Tweet): TweetSet =
     if (tw.text < elem.text) new NonEmpty(elem, left.remove(tw), right)
@@ -190,12 +213,17 @@ trait TweetList {
       f(head)
       tail.foreach(f)
     }
+
+  override def toString(): String = {
+    "{" + head.text + "." + tail + "}"
+  }
 }
 
 object Nil extends TweetList {
   def head = throw new java.util.NoSuchElementException("head of EmptyList")
   def tail = throw new java.util.NoSuchElementException("tail of EmptyList")
   def isEmpty = true
+  override def toString(): String = "/"
 }
 
 class Cons(val head: Tweet, val tail: TweetList) extends TweetList {
@@ -208,19 +236,32 @@ object GoogleVsApple {
 
   lazy val googleTweets: TweetSet = allTweets.filter((x:Tweet) => google.exists(x.text.contains(_)))
   lazy val appleTweets: TweetSet = allTweets.filter((x:Tweet) => apple.exists(x.text.contains(_)))
-//  lazy val googleTweets: TweetSet = new Empty
-//  lazy val appleTweets: TweetSet = new Empty
 
   /**
    * A list of all tweets mentioning a keyword from either apple or google,
    * sorted by the number of retweets.
    */
-//  lazy val trending: TweetList = (googleTweets union appleTweets).descendingByRetweet
-  lazy val trending: TweetList = new Cons(new Tweet("Doug","Fooey", 10), Nil)
+  lazy val trending: TweetList = (googleTweets union appleTweets).descendingByRetweet
+//  lazy val trending: TweetList = new Cons(new Tweet("Doug","Fooey", 10), Nil)
 }
 
 object Main extends App {
   println("starting main")
+//
+//  var t1 = new Tweet("doug","my tweet",1)
+//  var t2 = new Tweet("doug","my tweet2",3)
+//  var t3 = new Tweet("doug","my tweet3",2)
+//  var ts1 = new NonEmpty(t1, new Empty, new Empty)
+//  var ts2 = new NonEmpty(t2, new Empty, new NonEmpty(t3, new Empty, new Empty))
+//  ts1.mostRetweeted
+//  println("ts1 descending, "+ts1)
+//  ts1.descendingByRetweet  foreach println // 1 elem
+//
+//  println("ts1 union ts2 , "+(ts2 union ts1))
+//  println("ts1 union ts2 most, "+(ts2 union ts1).mostRetweeted)
+//  println("ts1 union ts2 descending, "+(ts2 union ts1).descendingByRetweet)
+//  (ts2 union ts1).descendingByRetweet foreach println
+
   GoogleVsApple.trending foreach println
   println("end main")
 }

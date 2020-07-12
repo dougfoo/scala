@@ -7,7 +7,7 @@ import TweetReader._
 
 var t1 = new Tweet("doug","my tweet",1)
 var t2 = new Tweet("jacky","tweet 2",2)
-var t3 = new Tweet("doug","android sucks",33)
+var t3 = new Tweet("doug","android sucks",333)
 var t4 = new Tweet("david","apple is great",111)
 
 var ts1 = new NonEmpty(t1, new Empty, new Empty)
@@ -39,6 +39,13 @@ l2.toList.length
 var l3 = toTweetSet(l2) union ts3
 l3.toList.length
 
+ts3
+ts3.mostRetweeted
+ts3.descendingByRetweet foreach println
+
+
+l3.mostRetweeted
+l3.descendingByRetweet foreach println
 print("end")
 
 
