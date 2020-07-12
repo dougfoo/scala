@@ -147,6 +147,7 @@ class NonEmpty(elem: Tweet, left: TweetSet, right: TweetSet) extends TweetSet {
 
   // recursive solution O(n^2) ?
   //     override def union(that: TweetSet): TweetSet = ((left union right) union that) incl elem
+  //            turns out you can just order it (left union (right union (that incl elem))) and it would be fast
   // is using List and fold cheating?   Maybe should do it natively w/ tree merging hmmm...
   override def union(that: TweetSet): TweetSet = {
     that.toList.foldLeft[TweetSet](this)((acc, item) => acc.incl(item))
