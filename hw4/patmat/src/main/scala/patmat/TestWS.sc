@@ -21,3 +21,10 @@ class Succ(n: Nat) extends Nat {
   def +(that: Nat) = new Succ(n + that)
   def -(that: Nat) = if (that.isZero) this else n - that.predecessor
 }
+
+object List extends Function1 {
+  def apply = Nil
+  def apply(x:Int) = Cons(x, Nil)
+  def apply(x:Int, y:Int): Int = Cons(x, Cons(y, Nil))
+  
+}
