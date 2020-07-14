@@ -6,7 +6,7 @@ case class Leaf(char: Char, weight: Int) extends CodeTree
 def weight(tree: CodeTree): Int = tree match { // tree match ...
   //sum of left/right weight?
   case Leaf(c,w) => w
-  case Fork(l,r,cs,w) => weight(l) + weight(r) + w
+  case Fork(l,r,cs,w) => weight(l) + weight(r)
 }
 
 def chars(tree: CodeTree): List[Char] =  tree match { // tree match ...
@@ -16,7 +16,7 @@ def chars(tree: CodeTree): List[Char] =  tree match { // tree match ...
 
 var a = Leaf('A', 5)
 var b = Leaf('B', 3)
-var f = Fork(a,b, List('A','B'), 8)
+var f = Fork(a,b, chars(a):::chars(b), weight(a)+weight(b))
 
 weight(f)
 chars(f)
