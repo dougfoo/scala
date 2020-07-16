@@ -71,7 +71,22 @@ trait Huffman extends HuffmanInterface {
    *       println("integer is  : "+ theInt)
    *   }
    */
-  def times(chars: List[Char]): List[(Char, Int)] = ???
+  def times(chars: List[Char]): List[(Char, Int)] = {
+    def add(c: Char, acc: List[(Char, Int)]): List[(Char, Int)] = {
+      if (acc.isEmpty || ! acc.exists((x) => x._1 == c)) (c, 1) :: acc
+      else if (acc.head._1 == c) (c, acc.head._2+1) :: acc.tail
+      else acc.head :: add(c, acc.tail)
+    }
+
+    def iter(in:List[Char], acc:List[(Char, Int)]): List[(Char, Int)] = {
+      if (in.tail.isEmpty) add(in.head, acc)
+      else {
+        // find the X and 5 and replace w/ + 1 ?  or create new entry
+        iter(in.tail, add(in.head, acc))
+      }
+    }
+    iter(chars, List[(Char,Int)]())
+  }
 
   /**
    * Returns a list of `Leaf` nodes for a given frequency table `freqs`.
