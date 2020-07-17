@@ -1,3 +1,5 @@
+import patmat.{Fork, Leaf}
+
 println("start")
 abstract class CodeTree
 
@@ -24,4 +26,6 @@ weight(f)
 chars(f)
 
 
+val superl = List(Fork(Fork(Leaf('e',1),Leaf('t',2),List('e', 't'),3),Leaf('x',4),List('e', 't', 'x'),7))
+superl.length
 

@@ -38,8 +38,13 @@ class HuffmanSuite {
 
   @Test def `until test`: Unit = {
     val leaflist = List(Leaf('e', 1), Leaf('t', 2), Leaf('x', 4))
-    assertEquals(List(Fork(Leaf('e',1),Leaf('t',2),List('e', 't'),3), Leaf('x',4)), until()combine(leaflist))
+    assertEquals(List(Fork(Fork(Leaf('e',1),Leaf('t',2),List('e', 't'),3),Leaf('x',4),List('e', 't', 'x'),7)), until(singleton, combine)(leaflist))
   }
+
+  @Test def `createCodeTree test`: Unit = {
+    assertEquals(Fork(Fork(Leaf('e',1),Leaf('t',2),List('e', 't'),3),Leaf('x',4),List('e', 't', 'x'),7), createCodeTree(string2Chars("xetxtxx")))
+  }
+
 
 
   @Test def `decode and encode a very short text should be identity (10pts)`: Unit =
