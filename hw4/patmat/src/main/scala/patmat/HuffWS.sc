@@ -1,3 +1,4 @@
+println("start")
 abstract class CodeTree
 
 case class Fork(left: CodeTree, right: CodeTree, chars: List[Char], weight: Int) extends CodeTree
@@ -19,6 +20,8 @@ var b = Leaf('B', 3)
 var f = Fork(a,b, chars(a):::chars(b), weight(a)+weight(b))
 
 weight(f)
+
 chars(f)
+
 
 

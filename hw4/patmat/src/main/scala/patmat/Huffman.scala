@@ -80,10 +80,7 @@ trait Huffman extends HuffmanInterface {
 
     def iter(in:List[Char], acc:List[(Char, Int)]): List[(Char, Int)] = {
       if (in.tail.isEmpty) add(in.head, acc)
-      else {
-        // find the X and 5 and replace w/ + 1 ?  or create new entry
-        iter(in.tail, add(in.head, acc))
-      }
+      else iter(in.tail, add(in.head, acc))
     }
     iter(chars, List[(Char,Int)]())
   }
@@ -95,12 +92,18 @@ trait Huffman extends HuffmanInterface {
    * head of the list should have the smallest weight), where the weight
    * of a leaf is the frequency of the character.
    */
-  def makeOrderedLeafList(freqs: List[(Char, Int)]): List[Leaf] = ???
+  def makeOrderedLeafList(freqs: List[(Char, Int)]): List[Leaf] = {
+    def makeLeaf(list: List[(Char, Int)], acc: List[Leaf] ): List[Leaf] = {
+      if (list.tail.isEmpty) Leaf(list.head._1, list.head._2) :: acc
+      else makeLeaf(list.tail, Leaf(list.head._1, list.head._2) :: acc)
+    }
+    makeLeaf(freqs.sortBy(_._2)(Ordering.Int.reverse), List[Leaf]())
+  }
 
   /**
    * Checks whether the list `trees` contains only one single code tree.
    */
-  def singleton(trees: List[CodeTree]): Boolean = ???
+  def singleton(trees: List[CodeTree]): Boolean = trees.length == 1   // or do they mean search and figure out if all connected?
 
   /**
    * The parameter `trees` of this function is a list of code trees ordered
@@ -114,7 +117,14 @@ trait Huffman extends HuffmanInterface {
    * If `trees` is a list of less than two elements, that list should be returned
    * unchanged.
    */
-  def combine(trees: List[CodeTree]): List[CodeTree] = ???
+  def combine(trees: List[CodeTree]): List[CodeTree] = {
+    if (trees.length < 2) trees
+    else if (trees.length == 2)
+      List[CodeTree](makeCodeTree(trees.head, trees.tail.head))
+    else { // insert just before f.weight < trees[elem].weight
+      (makeCodeTree(trees.head, trees.tail.head) :: trees.tail.tail).sortBy(weight(_))
+    }
+  }
 
   /**
    * This function will be called in the following way:
@@ -127,7 +137,10 @@ trait Huffman extends HuffmanInterface {
    * In such an invocation, `until` should call the two functions until the list of
    * code trees contains only one single tree, and then return that singleton list.
    */
-  def until(done: List[CodeTree] => Boolean, merge: List[CodeTree] => List[CodeTree])(trees: List[CodeTree]): List[CodeTree] = ???
+  def until(done: List[CodeTree] => Boolean, merge: List[CodeTree] => List[CodeTree])(trees: List[CodeTree]): List[CodeTree] = {
+
+
+  }
 
   /**
    * This function creates a code tree which is optimal to encode the text `chars`.
