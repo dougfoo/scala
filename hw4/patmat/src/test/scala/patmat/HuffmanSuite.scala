@@ -55,9 +55,28 @@ class HuffmanSuite {
       assertEquals("huffmanestcool".toList, decode(frenchCode, secret))
     }
 
+  @Test def `encode test`: Unit =
+    new TestTrees {
+      println(t1)
+      assertEquals(List(0,1), encode(t1)("ab".toList))
+      assertEquals(List(0,0), encode(t1)("aa".toList))
+      assertEquals(List(1,1), encode(t1)("bb".toList))
+      println(t2)
+      assertEquals(List(0,1,0,0,1), encode(t2)("bad".toList))
+    }
+
+
   @Test def `decode and encode a very short text should be identity (10pts)`: Unit =
     new TestTrees {
       assertEquals("ab".toList, decode(t1, encode(t1)("ab".toList)))
+      assertEquals("abd".toList, decode(t2, encode(t2)("abd".toList)))
+    }
+
+  @Test def `codebits test`: Unit =
+    new TestTrees {
+      val cb = List(('a',List(0)),('b',List(1)))
+      assertEquals(List(0), codeBits(cb)('a'))
+      assertEquals(List(1), codeBits(cb)('b'))
     }
 
 

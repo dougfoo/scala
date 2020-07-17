@@ -162,9 +162,9 @@ trait Huffman extends HuffmanInterface {
    * the resulting list of characters.
    */
   def decode(tree: CodeTree, bits: List[Bit]): List[Char] = {
-    def traverse(subtree: CodeTree,  bits: List[Bit], acc: List[Char]): List[Char] = subtree match {
-      case Leaf(c,w) => if (bits.isEmpty) acc ::: List(c) else traverse(tree, bits, acc ::: List(c))
-      case Fork(l,r,cs,w) => if (bits.head==0) traverse(l, bits.tail, acc) else traverse(r, bits.tail, acc)
+    def traverse(subtree: CodeTree,  b: List[Bit], acc: List[Char]): List[Char] = subtree match {
+      case Leaf(c,w) => if (b.isEmpty) acc ::: List(c) else traverse(tree, b, acc ::: List(c))
+      case Fork(l,r,cs,w) => if (b.head==0) traverse(l, b.tail, acc) else traverse(r, b.tail, acc)
     }
     traverse(tree, bits, List[Char]())
   }
@@ -194,7 +194,18 @@ trait Huffman extends HuffmanInterface {
    * This function encodes `text` using the code tree `tree`
    * into a sequence of bits.
    */
-  def encode(tree: CodeTree)(text: List[Char]): List[Bit] = ???
+  def encode(tree: CodeTree)(text: List[Char]): List[Bit] = {
+    def traverse(subtree: CodeTree,  chars: List[Char], acc: List[Bit]): List[Bit] = subtree match {
+      case Leaf(c,w) => {
+        if (chars.head == c) {
+          if (chars.tail.isEmpty) acc else traverse(tree, chars.tail, acc)
+        }
+        else List()
+      }
+      case Fork(l,r,cs,w) => traverse(l, chars, acc:::List(0)) ::: traverse(r, chars, acc ::: List(1))
+    }
+    traverse(tree, text, List[Bit]())
+  }
 
   // Part 4b: Encoding using code table
 
@@ -204,7 +215,10 @@ trait Huffman extends HuffmanInterface {
    * This function returns the bit sequence that represents the character `char` in
    * the code table `table`.
    */
-  def codeBits(table: CodeTable)(char: Char): List[Bit] = ???
+  def codeBits(table: CodeTable)(char: Char): List[Bit] = table.find(_._1 == char) match {
+    case Some(tab) => tab._2
+    case None => throw new NoSuchElementException("can't find: $char")
+  }
 
   /**
    * Given a code tree, create a code table which contains, for every character in the
