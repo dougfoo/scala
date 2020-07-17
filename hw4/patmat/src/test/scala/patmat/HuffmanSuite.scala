@@ -45,7 +45,15 @@ class HuffmanSuite {
     assertEquals(Fork(Fork(Leaf('e',1),Leaf('t',2),List('e', 't'),3),Leaf('x',4),List('e', 't', 'x'),7), createCodeTree(string2Chars("xetxtxx")))
   }
 
-
+  @Test def `decode test why are bits reversed order ?? 1/0 flip?`: Unit =
+    new TestTrees {
+      val t = createCodeTree(string2Chars("xetxtxx"))
+      println(t)
+      assertEquals("x".toList, decode(t, List(1)))
+      assertEquals("xx".toList, decode(createCodeTree(string2Chars("xetxtxx")), List(1,1)))
+      assertEquals("xtx".toList, decode(createCodeTree(string2Chars("xetxtxx")), List(1,0,1,1)))
+      assertEquals("huffmanestcool".toList, decode(frenchCode, secret))
+    }
 
   @Test def `decode and encode a very short text should be identity (10pts)`: Unit =
     new TestTrees {

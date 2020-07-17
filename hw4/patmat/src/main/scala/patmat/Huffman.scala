@@ -1,5 +1,7 @@
 package patmat
 
+import patmat.Huffman.{decode, frenchCode, secret}
+
 /**
  * A huffman code is represented by a binary tree.
  *
@@ -153,14 +155,19 @@ trait Huffman extends HuffmanInterface {
   }
 
   // Part 3: Decoding
-
   type Bit = Int
 
   /**
    * This function decodes the bit sequence `bits` using the code tree `tree` and returns
    * the resulting list of characters.
    */
-  def decode(tree: CodeTree, bits: List[Bit]): List[Char] = ???
+  def decode(tree: CodeTree, bits: List[Bit]): List[Char] = {
+    def traverse(subtree: CodeTree,  bits: List[Bit], acc: List[Char]): List[Char] = subtree match {
+      case Leaf(c,w) => if (bits.isEmpty) acc ::: List(c) else traverse(tree, bits, acc ::: List(c))
+      case Fork(l,r,cs,w) => if (bits.head==0) traverse(l, bits.tail, acc) else traverse(r, bits.tail, acc)
+    }
+    traverse(tree, bits, List[Char]())
+  }
 
   /**
    * A Huffman coding tree for the French language.
@@ -178,7 +185,7 @@ trait Huffman extends HuffmanInterface {
   /**
    * Write a function that returns the decoded secret
    */
-  def decodedSecret: List[Char] = ???
+  def decodedSecret: List[Char] = decode(frenchCode, secret)
 
 
   // Part 4a: Encoding using Huffman tree
