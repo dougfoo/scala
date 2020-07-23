@@ -96,7 +96,7 @@ trait Huffman extends HuffmanInterface {
    */
   def makeOrderedLeafList(freqs: List[(Char, Int)]): List[Leaf] = {
     def makeLeaf(list: List[(Char, Int)], acc: List[Leaf] ): List[Leaf] = {
-      if (list.tail.isEmpty) Leaf(list.head._1, list.head._2) :: acc
+      if (list.isEmpty) acc
       else makeLeaf(list.tail, Leaf(list.head._1, list.head._2) :: acc)
     }
     makeLeaf(freqs.sortBy(_._2)(Ordering.Int.reverse), List[Leaf]())
