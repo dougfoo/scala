@@ -77,8 +77,28 @@ class HuffmanSuite {
       val cb = List(('a',List(0)),('b',List(1)))
       assertEquals(List(0), codeBits(cb)('a'))
       assertEquals(List(1), codeBits(cb)('b'))
+      val cb2 = List(('a',List(0)),('b',List(1,0)), ('c',List(1,1)))
+      assertEquals(List(0), codeBits(cb2)('a'))
+      assertEquals(List(1,0), codeBits(cb2)('b'))
+      assertEquals(List(1,1), codeBits(cb2)('c'))
     }
 
+
+  @Test def `codetable test`: Unit =
+    new TestTrees {
+      val a=('a',List[Bit](0))::List[(Char, List[Bit])]()
+      val b=('b',List[Bit](1,0))::List[(Char, List[Bit])]()
+      val c=('c',List[Bit](1,1))::List[(Char, List[Bit])]()
+
+      assertEquals(List(('a',List(0)), ('b',List(1, 0))), mergeCodeTables(a,b))
+      assertEquals(List(('b',List(1,0)), ('c',List(1, 1))), mergeCodeTables(b,c))
+    }
+
+  @Test def `quickencode test`: Unit =
+    new TestTrees {
+      assertEquals(List(0,1,0,0,1), quickEncode(t2)("bad".toList))
+      assertEquals(List(1,1), quickEncode(t1)("bb".toList))
+    }
 
   @Rule def individualTestTimeout = new org.junit.rules.Timeout(10 * 1000)
 }
