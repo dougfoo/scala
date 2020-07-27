@@ -1,3 +1,39 @@
+val occurrences = List(('a', 2), ('b', 2))
+
+(for ((k, v) <- occurrences ; c <- (1 to v)) yield (k, c))
+
+(for {
+  (k, v) <- occurrences
+  c <- (1 to v)
+} yield (k, c)).groupBy(_._1)
+
+
+
+((1 until 5) map (i =>
+  (1 until 4) map (j => (i, j)))).flatten
+
+for ((k,v) <- occurrences)
+
+
+
+break
+
+// combine 2 lists
+val al = List (1,2,3,4)
+val bl = List (5,6,7)
+
+for {
+  a <- al
+  b <- bl
+} println(s"$a + $b")
+
+
+val xs = Map(1->"a",2->"b",3->"cd")
+val ys = Map(1->2, 3->4, 5->5)
+val zs = Map(1->2, 3->'c', 4->"foo")
+
+(for ((x,y) <- xs zip ys)
+  yield x*y).foldLeft(0.0)(_ + _)
 
 def scalar(xs: List[Double], ys: List[Double]): Double = {
   (for ((x,y) <- xs zip ys)
@@ -6,10 +42,6 @@ def scalar(xs: List[Double], ys: List[Double]): Double = {
 
 scalar(List(1.0, 2.0), List(3, 4))
 
-
-val xs = Map(1->"a",2->"b",3->"cd")
-val ys = Map(1->2, 3->4, 5->5)
-val zs = Map(1->2, 3->'c', 4->"foo")
 
 for (x <- xs if x._1 > 1) yield x._2
 
