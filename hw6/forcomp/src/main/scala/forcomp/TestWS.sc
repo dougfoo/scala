@@ -1,22 +1,63 @@
-val occurrences = List(('a', 2), ('b', 2))
+// val occurrences = List(('a', 2), ('b', 2), ('c',2))
+val occurrences = List(('a', 2), ('b', 2), ('c', 3), ('d',1))
+def expand(a: (Char,Int)): List[(Char,Int)] = ((1 to a._2) map (b => (a._1, b))).toList
+val xprod: (List[Any], List[Any]) => List[Any] = (left, right) =>
+  for {
+    l <- left; r <- right
+  } yield (l,r)
+// merge to same level
+//    List((('A',1),('B',2)),('C',1)) -> List(('A',1),('B',2),('C',1))
+def flattuple(list: List[(Any)]): List[Any] = {
+  def iter(list: List[(Any)], acc: List[(Char, Int)]): List[Any] = {
+    if (list.isEmpty) acc
+    else {
+      list.head match {
+        case (a:Char, b:Int) => { //println(s"char,int tuple $a $b");
+          (a,b) :: acc }
+        case (a,b) => { //println(s"tuple $a , $b");
+          iter(List(a), acc) ::: iter(List(b), acc) }
+        case (_) => acc   // actually should map to ()() empty ?
+      }}}
+  iter(list, List[(Char,Int)]())
+}
 
-(for ((k, v) <- occurrences ; c <- (1 to v)) yield (k, c))
+val exp = occurrences.map(v => ()::expand(v))
+val redleft = exp reduceLeft xprod
+val listed = redleft.map(m=>List(m))  // fill empty ()
+val flattup = listed.map(flattuple)
+
+o3
+
+
+
+
+def tcast(m:Any): Tuple2[Any,Any] = {
+  m match {
+    case tuple @ (a: Any, b: Any) => Tuple2(a,b)
+  }
+}
+
+
+break
+
+//def xprod(l: List[(Char,Int)]): List[(Char,Int)] = {
+//  l.foldLeft((x =>
+//}
+//  (for (k <- l)
+//    for (j <- k)
+//      yield (j))
+//}
+
 
 (for {
   (k, v) <- occurrences
   c <- (1 to v)
 } yield (k, c)).groupBy(_._1)
 
-
-
 ((1 until 5) map (i =>
   (1 until 4) map (j => (i, j)))).flatten
 
 for ((k,v) <- occurrences)
-
-
-
-break
 
 // combine 2 lists
 val al = List (1,2,3,4)

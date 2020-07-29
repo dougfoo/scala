@@ -82,8 +82,14 @@ object Anagrams extends AnagramsInterface {
    *  in the example above could have been displayed in some other order.
    */
   def combinations(occurrences: Occurrences): List[Occurrences] = {
-    def expand(occ: Occurrences): Occurrences = ???  /// expand ('a',3) -> (a,3)(a,2)(a,1)
-    def xprod(lh: Occurrences, rh: Occurrences): List[Occurrences] = ???   // mult (a,2)(a,1) * (b,2)(b,1) -> 8 perms
+    def expand(a: (Char,Int)): List[(Char,Int)] = ((1 to a._2) map (b => (a._1, b))).toList
+    val xprod: (List[Any], List[Any]) => List[Any] = (left, right) => {
+      for {
+        l <- left
+        r <- right
+        if (l != () && r != ())
+      } yield (l,r)
+    }
 
     (for {
       (k, v) <- occurrences
