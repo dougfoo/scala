@@ -31,10 +31,15 @@ class AnagramsSuite {
 
 
   @Test def `subtract: lard - r (10pts)`: Unit = {
+    val larrd = List(('a', 1), ('d', 1), ('l', 1), ('r', 2))
     val lard = List(('a', 1), ('d', 1), ('l', 1), ('r', 1))
     val r = List(('r', 1))
+    val rr = List(('r', 2))
     val lad = List(('a', 1), ('d', 1), ('l', 1))
     assertEquals(lad, subtract(lard, r))
+    assertEquals(lard, subtract(larrd, r))
+    assertEquals(lad, subtract(larrd, rr))
+    assertEquals(rr, subtract(larrd, lad))
   }
 
 

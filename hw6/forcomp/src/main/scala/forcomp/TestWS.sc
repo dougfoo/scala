@@ -1,4 +1,17 @@
+import forcomp.Anagrams.Occurrences
+
 val occurrences = List(('a', 2), ('b', 2), ('c',2))
+val oc2 = List(('a', 2), ('c',2))
+type Occurrences = List[(Char, Int)]
+
+def subtract(x: Occurrences, y: Occurrences): Occurrences = {
+  x.filter(p => ! y.exists(q => p == q ))
+}
+
+subtract(occurrences, oc2)
+
+
+
 //val occurrences = List(('a', 2), ('b', 2), ('c', 3), ('d',1))
 def expand(a: (Char,Int)): List[(Char,Int)] = ((1 to a._2) map (b => (a._1, b))).toList
 val xprod: (List[Any], List[Any]) => List[Any] = (left, right) =>

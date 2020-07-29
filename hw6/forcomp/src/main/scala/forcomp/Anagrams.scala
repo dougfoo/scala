@@ -1,5 +1,7 @@
 package forcomp
 
+import com.sun.corba.se.impl.orbutil.ObjectStreamClassUtil_1_3
+
 object Anagrams extends AnagramsInterface {
 
   /** A word is simply a `String`. */
@@ -128,7 +130,10 @@ object Anagrams extends AnagramsInterface {
    *  Note: the resulting value is an occurrence - meaning it is sorted
    *  and has no zero-entries.
    */
-  def subtract(x: Occurrences, y: Occurrences): Occurrences = ???
+  def subtract(x: Occurrences, y: Occurrences): Occurrences = {
+    val x2 = x.filter(p => ! y.exists(q => p == q ))        // remove full matches
+    x2.map(b => (b._1, b._2 - y.toMap.getOrElse(b._1, 0)))  // sub partial
+  }
 
   /** Returns a list of all anagram sentences of the given sentence.
    *
@@ -170,7 +175,23 @@ object Anagrams extends AnagramsInterface {
    *
    *  Note: There is only one anagram of an empty sentence.
    */
-  def sentenceAnagrams(sentence: Sentence): List[Sentence] = ???
+  def sentenceAnagrams(sentence: Sentence): List[Sentence] = {
+    def buildSentence(combs: List[Occurrences], acc: Sentence): Any = {
+      if (combs.isEmpty) List(acc)
+      else {
+        val words = dictionaryByOccurrences.getOrElse(combs.head, List[Word]())
+        val occ2 = if (words.isEmpty) combs else combs.map(a=> subtract(a, combs.head))
+        for (w <- words)
+          yield buildSentence(occ2, w :: acc)
+      }
+    }
+    if (sentence == Nil || sentence.isEmpty) List[Sentence](Nil)
+    else {
+      val occ = sentenceOccurrences(sentence) // occmap List[(Char,Int)]
+      val combs = combinations(occ) // all combinations / subsets List[List(Char,Int)]]
+      buildSentence(combs, List[Word]()).asInstanceOf[List[Sentence]]
+    }
+  }
 }
 
 object Dictionary {
