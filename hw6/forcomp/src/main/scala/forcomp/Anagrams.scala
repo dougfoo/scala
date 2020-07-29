@@ -83,18 +83,39 @@ object Anagrams extends AnagramsInterface {
    */
   def combinations(occurrences: Occurrences): List[Occurrences] = {
     def expand(a: (Char,Int)): List[(Char,Int)] = ((1 to a._2) map (b => (a._1, b))).toList
-    val xprod: (List[Any], List[Any]) => List[Any] = (left, right) => {
-      for {
-        l <- left
-        r <- right
-        if (l != () && r != ())
-      } yield (l,r)
-    }
 
-    (for {
-      (k, v) <- occurrences
-      c <- (1 to v)
-    } yield List((k, c))).toList
+    // for reduceLeft take n-lists and recurse right (L1*L2)*L3 generating tuple combinations
+    // L1=List((),(A,1)(A,2) and L2=List((),(B,1)) =>
+    //       (List(),List((A,1)),List((A,2)),List((B,1)),
+    //        List((A,1),(B,1)), List((A,2),(B,1)), List((A,2),(B,2)), List((A,1),(B,2)))
+    val xprod: (List[Any], List[Any]) => List[Any] = (left, right) =>
+      for {
+        l <- left; r <- right
+      } yield (l,r)
+
+    // flatten heirarchies to one flat List level
+    //    List((('A',1),('B',2)),('C',1)) -> List(('A',1),('B',2),('C',1))
+    def flattuple(list: List[(Any)]): List[Any] = {
+      def iter(list: List[(Any)], acc: List[(Char, Int)]): List[Any] = {
+        if (list.isEmpty) acc
+        else {
+          list.head match {
+            case (a:Char, b:Int) => { //println(s"char,int tuple $a $b");
+              (a,b) :: acc }
+            case (a,b) => { //println(s"tuple $a , $b");
+              iter(List(a), acc) ::: iter(List(b), acc) }
+            case (_) => acc   // actually should map to ()() empty ?
+          }}}
+      iter(list, List[(Char,Int)]())
+    }
+    if (occurrences == Nil || occurrences.isEmpty) List[Occurrences](Nil)
+    else {
+      val exp = occurrences.map(v => () :: expand(v))
+      val redleft = exp reduceLeft xprod
+      val listed = redleft.map(m => List(m))
+      val flattup = listed.map(flattuple)
+      flattup.asInstanceOf[List[Occurrences]]
+    }
   }
 
   /** Subtracts occurrence list `y` from occurrence list `x`.
