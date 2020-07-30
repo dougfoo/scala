@@ -116,7 +116,11 @@ object Anagrams extends AnagramsInterface {
       val redleft = exp reduceLeft xprod
       val listed = redleft.map(m => List(m))
       val flattup = listed.map(flattuple)
-      flattup.asInstanceOf[List[Occurrences]]
+//      flattup.asInstanceOf[List[Occurrences]]
+      flattup match {
+        case obj: List[Occurrences] => obj
+        case _=> throw new ClassCastException
+      }
     }
   }
 
@@ -181,10 +185,10 @@ object Anagrams extends AnagramsInterface {
     def anagrams(occs: Occurrences): List[Sentence] = {
       if (occs.isEmpty) List(Nil)
       else for {
-        comb <- combinations(occs)
-        w <- dictionaryByOccurrences getOrElse(comb, Nil)
+        c <- combinations(occs)
+        w <- dictionaryByOccurrences getOrElse(c, Nil)
         s <- anagrams(subtract(occs, wordOccurrences(w)))
-        if comb.nonEmpty
+        if c.nonEmpty
       } yield w :: s
     }
     anagrams(sentenceOccurrences(sentence))
