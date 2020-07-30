@@ -175,23 +175,25 @@ object Anagrams extends AnagramsInterface {
    *
    *  Note: There is only one anagram of an empty sentence.
    */
-  def sentenceAnagrams(sentence: Sentence): List[Sentence] = {
-    def buildSentence(combs: List[Occurrences], acc: Sentence): Any = {
-      if (combs.isEmpty) List(acc)
-      else {
-        val words = dictionaryByOccurrences.getOrElse(combs.head, List[Word]())
-        val occ2 = if (words.isEmpty) combs else combs.map(a=> subtract(a, combs.head))
-        for (w <- words)
-          yield buildSentence(occ2, w :: acc)
-      }
+  def sentenceAnagrams(sentence: Sentence): List[Sentence] = {   // had to peek at a better solution give creds
+    // https://github.com/gnavalesi/forcomp/blob/master/src/main/scala/forcomp/Anagrams.scala
+    // for a really elegant one
+    def anagrams(occs: Occurrences): List[Sentence] = {
+      if (occs.isEmpty) List(Nil)
+      else for {
+        comb <- combinations(occs)
+        w <- dictionaryByOccurrences getOrElse(comb, Nil)
+        s <- anagrams(subtract(occs, wordOccurrences(w)))
+        if comb.nonEmpty
+      } yield w :: s
     }
-    if (sentence == Nil || sentence.isEmpty) List[Sentence](Nil)
-    else {
-      val occ = sentenceOccurrences(sentence) // occmap List[(Char,Int)]
-      val combs = combinations(occ) // all combinations / subsets List[List(Char,Int)]]
-      buildSentence(combs, List[Word]()).asInstanceOf[List[Sentence]]
-    }
+    anagrams(sentenceOccurrences(sentence))
   }
+
+  //  def main(args: Array[String]) {
+  //    println(sentenceAnagrams (List ("Linux", "rulez") ))
+  //    println(sentenceAnagrams (List ("sa","ne"))) // -> should do 3 ? (Sean, Sane, as en)
+  //  }
 }
 
 object Dictionary {
