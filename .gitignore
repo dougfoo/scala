@@ -38,3 +38,6 @@ build
 #general
 *.class
 
+
+# specifics
+**/wikipedia.dat
