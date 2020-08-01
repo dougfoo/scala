@@ -25,7 +25,7 @@ object StackOverflow extends StackOverflow {
     val grouped = groupedPostings(raw)
     val scored  = scoredPostings(grouped)
     val vectors = vectorPostings(scored)
-//    assert(vectors.count() == 2121822, "Incorrect number of vectors: " + vectors.count())
+    assert(vectors.count() == 2121822, "Incorrect number of vectors: " + vectors.count())
 
     val means   = kmeans(sampleVectors(vectors), vectors, debug = true)
     val results = clusterResults(means, vectors)
@@ -77,13 +77,13 @@ class StackOverflow extends StackOverflowInterface with Serializable {
 
   /** Group the questions and answers together */
   def groupedPostings(postings: RDD[Posting]): RDD[(QID, Iterable[(Question, Answer)])] = {
-    ???
+    val qs = postings.filter(f => f.postingType == 1).map(p => (p.id, p))
+    val as = postings.filter(f => f.postingType == 2).map(p => (p.parentId match { case Some(i) => i; case None => throw new Exception("Bad data missing parentId for answer")}, p))
+    qs.join(as).groupByKey()
   }
-
 
   /** Compute the maximum score for each posting */
   def scoredPostings(grouped: RDD[(QID, Iterable[(Question, Answer)])]): RDD[(Question, HighScore)] = {
-
     def answerHighScore(as: Array[Answer]): HighScore = {
       var highScore = 0
           var i = 0
@@ -96,9 +96,8 @@ class StackOverflow extends StackOverflowInterface with Serializable {
       highScore
     }
 
-    ???
+    grouped.map(x => (x._2.head._1, answerHighScore(x._2.map(_._2).toArray)))
   }
-
 
   /** Compute the vectors for the kmeans */
   def vectorPostings(scored: RDD[(Question, HighScore)]): RDD[(LangIndex, HighScore)] = {
@@ -116,7 +115,7 @@ class StackOverflow extends StackOverflowInterface with Serializable {
       }
     }
 
-    ???
+    scored.map(x=> ((firstLangInTag(x._1.tags, langs) match { case None => 0; case Some(i)=>i }) * langSpread, x._2))
   }
 
 

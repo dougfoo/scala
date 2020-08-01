@@ -38,6 +38,14 @@ class StackOverflowSuite {
     assert(instantiatable, "Can't instantiate a StackOverflow object")
   }
 
+  @Test def `testVector build can be instantiated`: Unit = {
+    val lines = sc.textFile("src/main/resources/stackoverflow/stackoverflow.csv")
+    val raw = testObject.rawPostings(lines)
+    val grouped = testObject.groupedPostings(raw)
+    val scored = testObject.scoredPostings(grouped)
+    val vectors = testObject.vectorPostings(scored)
+    assert(vectors.count() == 2121822, "Incorrect number of vectors: " + vectors.count())
+  }
 
   @Rule def individualTestTimeout = new org.junit.rules.Timeout(100 * 1000)
 }
