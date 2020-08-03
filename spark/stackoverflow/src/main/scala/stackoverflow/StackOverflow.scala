@@ -23,7 +23,7 @@ object StackOverflow extends StackOverflow {
     val lines   = sc.textFile("src/main/resources/stackoverflow/stackoverflow.csv")
     val raw     = rawPostings(lines)
     val grouped = groupedPostings(raw)
-    val scored  = scoredPostings(grouped)
+    val scored  = scoredPostings(grouped)  //  .sample(true, 0.1, 0)
     val vectors = vectorPostings(scored)
     assert(vectors.count() == 2121822, "Incorrect number of vectors: " + vectors.count())
 
@@ -121,7 +121,6 @@ class StackOverflow extends StackOverflowInterface with Serializable {
 
   /** Sample the vectors */
   def sampleVectors(vectors: RDD[(LangIndex, HighScore)]): Array[(Int, Int)] = {
-
     assert(kmeansKernels % langs.length == 0, "kmeansKernels should be a multiple of the number of languages studied.")
     val perLang = kmeansKernels / langs.length
 
@@ -162,17 +161,19 @@ class StackOverflow extends StackOverflowInterface with Serializable {
   }
 
 
-  //
-  //
   //  Kmeans method:
-  //
-  //
 
   /** Main kmeans computation */
   @tailrec final def kmeans(means: Array[(Int, Int)], vectors: RDD[(Int, Int)], iter: Int = 1, debug: Boolean = false): Array[(Int, Int)] = {
-    val newMeans = means.clone() // you need to compute newMeans
+//    val newMeans = means.clone() // you need to compute newMeans
 
-    // TODO: Fill in the newMeans array
+    val meanVector = vectors.map(x => (findClosest(x, means), x)) // map of index, vector
+    val closest = meanVector.groupByKey()  // group by closest (int, Iterable[(Int,Int)])
+    val newMeans = closest.mapValues(averageVectors).sortByKey().values.collect()     // to (int, (int,int)) -> ordered List[(Int,Int)]
+
+    println("oldMeans: " + means)
+    println("newMeans: " + newMeans)
+
     val distance = euclideanDistance(means, newMeans)
 
     if (debug) {
@@ -197,14 +198,7 @@ class StackOverflow extends StackOverflowInterface with Serializable {
     }
   }
 
-
-
-
-  //
-  //
   //  Kmeans utilities:
-  //
-  //
 
   /** Decide whether the kmeans clustering converged */
   def converged(distance: Double) =
@@ -260,9 +254,6 @@ class StackOverflow extends StackOverflowInterface with Serializable {
     ((comp1 / count).toInt, (comp2 / count).toInt)
   }
 
-
-
-
   //
   //
   //  Displaying results:
@@ -273,10 +264,12 @@ class StackOverflow extends StackOverflowInterface with Serializable {
     val closestGrouped = closest.groupByKey()
 
     val median = closestGrouped.mapValues { vs =>
-      val langLabel: String   = ??? // most common language in the cluster
-      val langPercent: Double = ??? // percent of the questions in the most common language
-      val clusterSize: Int    = ???
-      val medianScore: Int    = ???
+      val langToCount: Map[Int,Int] = vs.groupBy(_._1).mapValues(_.size)
+      val langIndex: Int = langToCount.toSeq.sortBy(_._2).reverse.head._1
+      val langLabel: String   = langs(langIndex)  // most common language in the cluster
+      val langPercent: Double = langToCount(langIndex) / langToCount.values.reduceLeft(_ + _) // langToCount.sum // percent of the questions in the most common language
+      val clusterSize: Int    = vs.size
+      val medianScore: Int    = (vs.foldLeft(0)(_ + _._2) / clusterSize).toInt
 
       (langLabel, langPercent, clusterSize, medianScore)
     }
