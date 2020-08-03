@@ -166,7 +166,7 @@ class StackOverflow extends StackOverflowInterface with Serializable {
   /** Main kmeans computation */
   @tailrec final def kmeans(means: Array[(Int, Int)], vectors: RDD[(Int, Int)], iter: Int = 1, debug: Boolean = false): Array[(Int, Int)] = {
     var newMeans = means.clone() // you need to compute newMeans
-
+    vectors.cache()
     val meanVector = vectors.map(v => (findClosest(v, means), v)) // -> map(index, vector)
     val closest = meanVector.groupByKey()  // group by closest -> List(int, Iterable[(Int,Int)])
     val newMeansM = closest.mapValues(averageVectors).collect   // to (int, (int,int)) ->  Array(Int, List[(Int,Int)])  // to map screws order!!
