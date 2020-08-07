@@ -109,10 +109,11 @@ object TimeUsage extends TimeUsageInterface {
     // more sense for our use case
     // Hint: you can use the `when` and `otherwise` Spark functions
     // Hint: don’t forget to give your columns the expected name with the `as` method
-    val workingStatusProjection: Column = when(col("telfs") >= 1 && col("telfs") < 3, "working").otherwise("not working").as[String]
-    val sexProjection: Column = when(col("tesex") === 1, "male").otherwise("female").as[String]
-    val ageProjection: Column = when(col("teage") >= 15 && col("teage") <= 22, "young").
-      when(col("teage") >= 23 && col("teage") <= 55, "active").
+    val workingStatusProjection: Column = (when(col("telfs") >= 1 && col("telfs") < 3, "working")
+      .otherwise("not working")).as[String]
+    val sexProjection: Column = (when(col("tesex") === 1, "male").otherwise("female")).as[String]
+    val ageProjection: Column = (when(col("teage") >= 15 && col("teage") <= 22, "young").
+      when(col("teage") >= 23 && col("teage") <= 55, "active")).
       otherwise("elder").as[String]
 
     // Create columns that sum columns of the initial dataset
@@ -166,7 +167,9 @@ object TimeUsage extends TimeUsageInterface {
     * @param viewName Name of the SQL view to use
     */
   def timeUsageGroupedSqlQuery(viewName: String): String =
-    ???
+    "select working, sex, age, sum(working), sum(sex), sum(age), round(avg(primaryNeeds),1), round(avg(work),1), round(avg(other),1) from "+
+      viewName+" group by sum(working), sum(sex), sum(age), round(avg(primaryNeeds),1), round(avg(work),1), round(avg(other),1) "+
+      "order by working, sex, age"
 
   /**
     * @return A `Dataset[TimeUsageRow]` from the “untyped” `DataFrame`
@@ -176,8 +179,10 @@ object TimeUsage extends TimeUsageInterface {
     * cast them at the same time.
     */
   def timeUsageSummaryTyped(timeUsageSummaryDf: DataFrame): Dataset[TimeUsageRow] =
-    ???
-
+    timeUsageSummaryDf.map({
+      case Row(val1: String, val2: String, val3: String, val4: Double, val5: Double, val6: Double) =>
+        TimeUsageRow(val1,val2,val3,val4,val5,val6)
+    })
   /**
     * @return Same as `timeUsageGrouped`, but using the typed API when possible
     * @param summed Dataset returned by the `timeUsageSummaryTyped` method
