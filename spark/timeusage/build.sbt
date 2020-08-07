@@ -3,6 +3,10 @@ assignment := "timeusage"
 
 scalaVersion := "2.12.8"
 scalacOptions ++= Seq("-language:implicitConversions", "-deprecation")
+
+libraryDependencies += "org.scalactic" %% "scalactic" % "3.2.0"
+libraryDependencies += "org.scalatest" %% "scalatest" % "3.2.0" % "test"
+
 libraryDependencies ++= Seq(
   "com.novocode" % "junit-interface" % "0.11" % Test,
   ("org.apache.spark" %% "spark-core" % "2.4.3"),
