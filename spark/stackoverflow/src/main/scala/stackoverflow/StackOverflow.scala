@@ -43,7 +43,7 @@ class StackOverflow extends StackOverflowInterface with Serializable {
       "Objective-C", "Perl", "Scala", "Haskell", "MATLAB", "Clojure", "Groovy")
 
   /** K-means parameter: How "far apart" languages should be for the kmeans algorithm? */
-  def langSpread = 50000
+  def langSpread = 1
   assert(langSpread > 0, "If langSpread is zero we can't recover the language from the input data!")
 
   /** K-means parameter: Number of clusters */

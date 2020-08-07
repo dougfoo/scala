@@ -42,3 +42,5 @@ build
 # specifics
 **/wikipedia.dat
 **/stackoverflow.csv
+**/timeusage.csv
+**/atussum.csv
