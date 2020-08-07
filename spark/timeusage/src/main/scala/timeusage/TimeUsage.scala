@@ -33,6 +33,9 @@ object TimeUsage extends TimeUsageInterface {
     val summaryDf = timeUsageSummary(primaryNeedsColumns, workColumns, otherColumns, initDf)
     val finalDf = timeUsageGrouped(summaryDf)
     finalDf.show()
+
+    val finalDF2 = timeUsageGroupedTyped(timeUsageSummaryTyped(summaryDf))
+    finalDF2.show()
   }
 
   /** @return The read DataFrame along with its column names. */
@@ -45,7 +48,7 @@ object TimeUsage extends TimeUsageInterface {
     * @param line Raw fields
     */
   def row(line: List[String]): Row = {
-    Row(line.head, line.tail.map(v => v.toDouble))
+    Row(line.head :: line.tail.map(v => v.toDouble): _*)   // expands for * parameters, otherwise wraps in List()
   }
 
   /** @return The initial data frame columns partitioned in three groups: primary needs (sleeping, eating, etc.),
@@ -57,17 +60,17 @@ object TimeUsage extends TimeUsageInterface {
     *
     *      This method groups related columns together:
     *      1. “primary needs” activities (sleeping, eating, etc.). These are the columns starting with “t01”, “t03”, “t11”,
-    *      “t1801” and “t1803”.
-    *      2. working activities. These are the columns starting with “t05” and “t1805”.
-    *      3. other activities (leisure). These are the columns starting with “t02”, “t04”, “t06”, “t07”, “t08”, “t09”,
-    *      “t10”, “t12”, “t13”, “t14”, “t15”, “t16” and “t18” (those which are not part of the previous groups only).
+    *         “t1801” and “t1803”.
+    *         2. working activities. These are the columns starting with “t05” and “t1805”.
+    *         3. other activities (leisure). These are the columns starting with “t02”, “t04”, “t06”, “t07”, “t08”, “t09”,
+    *         “t10”, “t12”, “t13”, “t14”, “t15”, “t16” and “t18” (those which are not part of the previous groups only).
     */
   def classifiedColumns(columnNames: List[String]): (List[Column], List[Column], List[Column]) = {
-    val primary = columnNames.filter(f => f.matches("(t01|t03|t11|t1801|t1803).*")).map(c => col(c))
-    val working = columnNames.filter(f => f.startsWith("t05") || f.startsWith("t1805")).map(c => col(c))
-    val other = columnNames.filter(f => f.matches("(t02|t04|t06|t07|t08|t09|t10|t12|t13|t14|t15|t16|t18).*") && !primary.contains(f) && !working.contains(f)).map(c=>col(c))
+    val primary = columnNames.filter(f => f.matches("(t01|t03|t11|t1801|t1803).*"))
+    val working = columnNames.filter(f => f.startsWith("t05") || f.startsWith("t1805"))
+    val other = columnNames.filter(f => f.matches("(t02|t04|t06|t07|t08|t09|t10|t12|t13|t14|t15|t16|t18).*") && !primary.contains(f) && !working.contains(f))
 
-    (primary, working, other)
+    (primary.map(c => col(c)), working.map(c => col(c)), other.map(c => col(c)))
   }
 
   /** @return a projection of the initial DataFrame such that all columns containing hours spent on primary needs
@@ -100,9 +103,9 @@ object TimeUsage extends TimeUsageInterface {
     *                            Note that the initial DataFrame contains time in ''minutes''. You have to convert it into ''hours''.
     */
   def timeUsageSummary(primaryNeedsColumns: List[Column],
-                        workColumns: List[Column],
-                        otherColumns: List[Column],
-                        df: DataFrame
+                       workColumns: List[Column],
+                       otherColumns: List[Column],
+                       df: DataFrame
                       ): DataFrame = {
     // Transform the data from the initial dataset into data that make
     // more sense for our use case
@@ -115,7 +118,7 @@ object TimeUsage extends TimeUsageInterface {
       when(col("teage") >= 23 && col("teage") <= 55, "active")).
       otherwise("elder").as("age")
 
-     // Hint: you want to create a complex column expression that sums other columns
+    // Hint: you want to create a complex column expression that sums other columns
     //       by using the `+` operator between them
     // Hint: don’t forget to convert the value to hours
     val primaryNeedsProjection: Column = (primaryNeedsColumns.reduce(_ + _).divide(60)).as("primaryNeeds")
@@ -135,11 +138,11 @@ object TimeUsage extends TimeUsageInterface {
     *               - sex: the “sex” column of the `summed` DataFrame,
     *               - age: the “age” column of the `summed` DataFrame,
     *               - primaryNeeds: the average value of the “primaryNeeds” columns of all the people that have the same working
-    *               status, sex and age, rounded with a scale of 1 (using the `round` function),
+    *                 status, sex and age, rounded with a scale of 1 (using the `round` function),
     *               - work: the average value of the “work” columns of all the people that have the same working status, sex
-    *               and age, rounded with a scale of 1 (using the `round` function),
+    *                 and age, rounded with a scale of 1 (using the `round` function),
     *               - other: the average value of the “other” columns all the people that have the same working status, sex and
-    *               age, rounded with a scale of 1 (using the `round` function).
+    *                 age, rounded with a scale of 1 (using the `round` function).
     *
     *               Finally, the resulting DataFrame should be sorted by working status, sex and age.
     */
@@ -165,8 +168,9 @@ object TimeUsage extends TimeUsageInterface {
     */
   def timeUsageGroupedSqlQuery(viewName: String): String =
     "select working, sex, age, round(avg(primaryNeeds),1), round(avg(work),1), round(avg(other),1) from " +
-      viewName + " group by working, sex, age " +
-      "order by working, sex, age"
+      viewName + " group by working, sex, age "+
+      " order by working, sex, age"
+
 
   /**
     * @return A `Dataset[TimeUsageRow]` from the “untyped” `DataFrame`
@@ -205,7 +209,9 @@ object TimeUsage extends TimeUsageInterface {
     */
   def timeUsageGroupedTyped(summed: Dataset[TimeUsageRow]): Dataset[TimeUsageRow] = {
     import org.apache.spark.sql.expressions.scalalang.typed
-    (summed.groupByKey(k => (k.working, k.sex, k.age)).agg(typed.avg(_.primaryNeeds), typed.avg(_.work), typed.avg(_.other))).as[TimeUsageRow]
+    summed.groupByKey(k => (k.working, k.sex, k.age)).agg(typed.avg(_.primaryNeeds), typed.avg(_.work), typed.avg(_.other)).map {
+      case ((a, b, c), d, e, f) => TimeUsageRow(a, b, c,  (d*10).round/10.0, (e*10).round/10.0, (f*10).round/10.0)
+    }.orderBy("working","sex","age")
   }
 }
 
